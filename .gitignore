@@ -1,0 +1,28 @@
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# .Ds_Store
+.Ds_Store
+
+# Byte-compiled
+__pycache__
+# PyCharm
+.idea/
+
+# Distribution / packaging
+.eggs/
+build/
+dist/
+*.egg-info/
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Unit test / coverage reports
+.pytest_cache/
+.coverage
+
+# virtualenv
+venv/

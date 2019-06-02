@@ -1,0 +1,23 @@
+# Config file for automatic testing at travis-ci.org
+dist: xenial
+
+language: python
+
+python:
+  - 3.7
+
+os:
+  - linux
+
+notifications:
+  email: hibearme@163.com
+
+install:
+  - pip install --quiet -r requirements.txt
+
+script:
+  - flake8
+  - coverage run setup.py test
+
+after_success:
+  - codecov
