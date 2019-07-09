@@ -188,7 +188,7 @@ class NeuralEE(object):
         else:
             ind_sub = torch.randperm(N)[: N_sub].tolist()
             Y = self.dataset.Y[ind_sub]
-            labels = self.lamabels[ind_sub].squeeze()
+            labels = self.labels[ind_sub].squeeze()
             print('Compute affinity on subsample')
             Wp, Wn = self.dataset._affinity(Y, aff, perplexity)
             Wp = torch.from_numpy(Wp)
@@ -300,10 +300,10 @@ class NeuralEE(object):
             ind_sub = torch.randperm(N)[: N_sub].tolist()
             Y = self.dataset.Y[ind_sub]
             Wp, Wn = self.dataset._affinity(Y, aff, perplexity)
-            Y, = torch.from_numpy(Y)
+            Y = torch.from_numpy(Y)
             Wp = torch.from_numpy(Wp)
             Wn = torch.from_numpy(Wn)
-            labels = self.lamabels[ind_sub].squeeze()
+            labels = self.labels[ind_sub].squeeze()
             sub_samples = {'Y': Y,
                            'labels': labels,
                            'Wp': Wp,
@@ -426,7 +426,7 @@ class NeuralEE(object):
             assert calculate_error is None or hasattr(self.dataset, 'Wp'), \
                 'affinity on entire dataset is needed.'
             samples = {'Y': torch.from_numpy(self.dataset.Y),
-                       'labels': self.lamabels,
+                       'labels': self.labels,
                        'Wp': None
                        if calculate_error is None else self.dataset.Wp,
                        'Wn': None

@@ -45,9 +45,7 @@ class BrainLargeDataset(GeneExpressionDataset):
 
         self.download_name = "genomics.h5"
         Xs = self.download_and_preprocess()
-        batch_indices = np.zeros((Xs.shape[0], 1))
-        labels = np.zeros((Xs.shape[0], 1))
-        super().__init__(Xs, batch_indices=batch_indices, labels=labels)
+        super().__init__(Xs)
 
     def preprocess(self):
         print("Preprocessing Brain Large data")
@@ -60,7 +58,7 @@ class BrainLargeDataset(GeneExpressionDataset):
                 self.subsample_size = n_cells
             indptr = dset['indptr'][...]
 
-            ns_cells = min(10000, n_cells)  # TODO : remove
+            ns_cells = min(100000, n_cells)  # TODO : remove
             ns_indptr = indptr[:(ns_cells + 1)]
             ns_nnz = ns_indptr[-1]
             ns_data = dset["data"][:ns_nnz].astype(np.float32)

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 def scatter(X, labels=None, cell_types=None, title=None, s=1, fg_kwargs=dict(),
-            size=1.0, lg_kwargs=dict()):
+            size=1.0, lg_kwargs=dict(), cmap_str='jet'):
     """scatter plot.
 
     :param X: sample-coordinate matrix.
@@ -47,9 +47,9 @@ def scatter(X, labels=None, cell_types=None, title=None, s=1, fg_kwargs=dict(),
     if cell_types is not None:
         assert len(cell_types) == len(label_unique), \
             'Labels do not correspond to cell types.'
-    jet = plt.get_cmap('jet')  # 'nipy_spectral'
+    cmap = plt.get_cmap(cmap_str)
     cNorm = colors.Normalize(vmin=0, vmax=range(len(label_unique))[-1])
-    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
     plt.figure(**fg_kwargs)
     for il, ll in enumerate(label_unique):
         XX = X[labels == ll, :]
@@ -65,41 +65,6 @@ def scatter(X, labels=None, cell_types=None, title=None, s=1, fg_kwargs=dict(),
     if title is not None:
         plt.title(title)
     plt.tight_layout()
-
-
-def scatter_without_outlier(X, n_outlier=1000, s=0.0001,
-                            fg_kwargs={'figsize': [10, 10]},
-                            labels=None, cell_types=None, lg_kwargs=dict()):
-    """scatter plot on large dataset.
-
-    First remove some outliers by distance from the center
-    after standard scaling data points. Note that median used
-    instead of mean to enhance robustness.
-
-    :param X: sample-coordinate matrix.
-    :type X: numpy.ndarray
-    :param n_outlier: number of outlier need to be remove.
-    :type n_outlier: int
-    :param s: point size.
-    :param fg_kwargs: figure parameters dict.
-    :param labels: index label. if None, set as np.zeros.
-    :type labels: numpy.ndarray
-    :param cell_types: string for each index label.
-     if None, legend directly displayed as index.
-    :type cell_types: numpy.ndarray
-    :param lg_kwargs: legend parameters dict.
-     if None, set as {'markerscale': 2, 'fontsize': 'xx-small'}.
-    :type lg_kwargs: dict
-    """
-    median = np.median(X, axis=0)
-    X_reduce = X - median
-    d2 = (X_reduce ** 2).sum(axis=1)
-    ind_remain = d2.argsort()[:: -1][n_outlier:]
-    X_reduce = X_reduce[ind_remain]
-    if labels is not None:
-        labels = labels[ind_remain]
-    scatter(X_reduce, s=s, fg_kwargs=fg_kwargs, labels=labels,
-            cell_types=cell_types, lg_kwargs=lg_kwargs)
 
 
 def scatter_with_colorbar(X, labels=None, cell_types=None, title=None, s=1,

@@ -44,9 +44,9 @@ Installation
     cd NeuralEE
     python setup.py install --user
 
--------------------
-How to use NeuralEE
--------------------
+--------
+Tutorial
+--------
 
 .. code-block:: python
 
@@ -54,26 +54,43 @@ How to use NeuralEE
     from neuralee.embedding import NeuralEE
     
     import torch
+
+    # detect whether to use GPU.
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # preprocess dataset
+    # 1 load dataset.
     cortex_dataset = CortexDataset(save_path='../data/')
+
+    # 2 preprocess dataset. logarithm transformation, genes subsample and standard scale.
     cortex_dataset.log_shift()
     cortex_dataset.subsample_genes(558)  
     cortex_dataset.standardscale()
-
+    
+    # 3 embedding.
+    # 3.1 not using mini-batch trick, if dataset is not large.
+    # 3.1.1 calculate weights matrix
     cortex_dataset.affinity()
+    
+    # 3.1.2 initialize NeuralEE class.
     NEE = NeuralEE(cortex_dataset, device=device)
+    
+    # 3.1.3.1 elastic embedding.
+    results = NEE.EE()
 
-    results = NEE.EE()  # Elastic embedding results.
-    results_Neural = NEE.fine_tune()  # NeuralEE results.
+    # 3.1.3.2 NeuralEE.
+    results_Neural = NEE.fine_tune()
 
-    # with 'mini-batch' trick
+    # 3.2 introduce mini-batch trick.
+    # 3.2.1 calculate weights matrix on each batch.
     cortex_dataset.affinity_split(N_small=0.25)
+
+    # 3.2.2 initialize NeuralEE class.
     NEE = NeuralEE(cortex_dataset, device=device)
+
+    # 3.2.3 elastic embedding.
     results_Neural_with4batches = NEE.fine_tune()
 
-Reproduction. Reference from
+For more detailed tutorials and reproduction of original paper's results, check at
 `notebook <https://github.com/HiBearME/NeuralEE/tree/master/tests/notebooks>`_
 files.
 
