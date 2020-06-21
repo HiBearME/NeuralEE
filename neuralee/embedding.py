@@ -59,7 +59,7 @@ class NeuralEE(object):
                    If None, set as torch.device('cpu').
     :type device: torch.device
     """
-    def __init__(self, dataset, d=2, lam=10, device=None):
+    def __init__(self, dataset, d=2, lam=1, device=None):
         self.dataset = dataset
         self.d = d
         self.lam = lam
@@ -139,7 +139,7 @@ class NeuralEE(object):
             calculate_error=calculate_error)
 
     def EE(self, size=1., maxit=200, tol=1e-5, frequence=None, aff='ea',
-           perplexity=20.0):
+           perplexity=30.0):
         """Free Elastic embedding (no mapping).
 
         Fast training of nonlinear embeddings using the spectral direction for
@@ -207,9 +207,11 @@ class NeuralEE(object):
             Lp4 + 1e-6 * torch.eye(N_sub, N_sub, device=self.device),
             upper=True)
         invR = R.inverse()
-        S = torch.eye(N_sub, N_sub, device=self.device)
-        P0 = -S @ invR @ invR.t() @ S.t()
-        del R, S, invR, Dp
+        # S = torch.eye(N_sub, N_sub, device=self.device)
+        # P0 = -S @ invR @ invR.t() @ S.t()
+        # del R, S, invR, Dp
+        P0 = -invR @ invR.t()
+        del R, invR, Dp
         torch.cuda.empty_cache()
         Xold = X0.to(self.device)
         e, ker = error_ee(Xold, Wp, Wn, self.lam)
@@ -246,8 +248,8 @@ class NeuralEE(object):
         return y.to(self.device), Lp.to(self.device), Wn.to(self.device)
 
     def fine_tune(self, optimizer=None, size=1., net=None, frequence=50,
-                  verbose=False, maxit=500, calculate_error='cuda',
-                  pin_memory=True, aff='ea', perplexity=20.0,
+                  verbose=False, maxit=500, calculate_error=None,
+                  pin_memory=True, aff='ea', perplexity=30.0,
                   save_embedding=None):
         """NeuralEE method.
 

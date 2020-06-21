@@ -26,3 +26,6 @@ docs/_templates/
 
 # virtualenv
 venv/
+
+# data
+data/

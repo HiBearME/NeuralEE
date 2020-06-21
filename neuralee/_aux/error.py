@@ -38,6 +38,7 @@ def sqdist(X):
     ind = torch.arange(X.shape[0]).tolist()
     sqd[ind, ind] = torch.zeros(
         X.shape[0], device=X.device, dtype=torch.float32)
+    sqd = sqd.clamp_min(0)
     return sqd
 
 

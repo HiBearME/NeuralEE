@@ -58,23 +58,25 @@ class GeneExpressionDataset(object):
         self.std_scaler = StandardScaler()
         self.Y = self.std_scaler.fit_transform(self.Y)
 
-    def affinity(self, aff='ea', perplexity=20.0):
+    def affinity(self, aff='ea', perplexity=30.0, neighbors=None):
         """Affinity calculation.
 
         :param aff: affinity used to calculate attractive weights.
         :type aff: {'ea', 'x2p'}
         :param perplexity: perplexity defined in elastic embedding function.
+        :param neighbors: the number of nearest neighbors
+        :type neighbors: int
         """
         print('Compute affinity, perplexity={}, on entire dataset'.
               format(perplexity))
-        self.Wp, self.Wn = self._affinity(self.Y, aff, perplexity)
+        self.Wp, self.Wn = self._affinity(self.Y, aff, perplexity, neighbors)
         Lp = np.diagflat(self.Wp.sum(axis=1)) - self.Wp
         self.Lps = np.expand_dims(Lp, 0)
         self.Wns = np.expand_dims(self.Wn, 0)
         self.Y_splits = np.expand_dims(self.Y, 0)
 
-    def affinity_split(self, N_small=None, aff='ea', perplexity=20.0,
-                       verbose=False):
+    def affinity_split(self, N_small=None, aff='ea', perplexity=30.0,
+                       verbose=False, neighbors=None):
         """Affinity calculation on each batch.
 
         Preparation for NeuralEE with mini-batch trick.
@@ -86,6 +88,8 @@ class GeneExpressionDataset(object):
         :param perplexity: perplexity defined in elastic embedding function.
         :param verbose: whether to show the progress of affinity calculation.
         :type verbose: bool.
+        :param neighbors: the number of nearest neighbors
+        :type neighbors: int
         """
         N = len(self)
         if N_small is not None:
@@ -103,12 +107,13 @@ class GeneExpressionDataset(object):
                     disable=not verbose) as pbar:
             for i in pbar:
                 Wp, self.Wns[i] = \
-                    self._affinity(self.Y_splits[i], aff, perplexity)
+                    self._affinity(
+                        self.Y_splits[i], aff, perplexity, neighbors)
                 self.Lps[i] = np.diagflat(Wp.sum(axis=1)) - Wp
                 pbar.update(1)
 
     @staticmethod
-    def _affinity(Y, aff, perplexity):
+    def _affinity(Y, aff, perplexity, neighbors=None):
         """Return attractive and repulsive weights matrices.
 
         :param Y: sample-feature matrix.
@@ -117,12 +122,14 @@ class GeneExpressionDataset(object):
         :type aff: {'ea', 'x2p'}
         :param perplexity: perplexity defined in elastic embedding function.
         :returns: attractive and repulsive weights.
+        :param neighbors: the number of nearest neighbors
+        :type neighbors: int
         """
 
         N = Y.shape[0]
         assert aff in ['ea', 'x2p']
         if aff == 'ea':
-            Wp, Wn = ea(Y, perplexity)
+            Wp, Wn = ea(Y, perplexity, neighbors)
         else:
             Wp, Wn = x2p(Y, perplexity)
 

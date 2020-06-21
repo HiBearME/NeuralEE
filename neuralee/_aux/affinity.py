@@ -2,11 +2,13 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 
-def nnsqdist(X):
+def nnsqdist(X, neighbors=None):
     """Euclidean distance of coordinates.
 
     :param X: sample-coordinates matrix
     :type X: numpy.ndarray
+    :param neighbors: the number of nearest neighbors
+    :type neighbors: int
     :returns: sorted index according to the descent distance
      across sample; corresponding distance; Euclidean distance.
     """
@@ -14,13 +16,16 @@ def nnsqdist(X):
     x2 = (X ** 2).sum(axis=1, keepdims=True)
     sqd = x2 - 2 * X @ X.T + x2.T
     np.fill_diagonal(sqd, 0)
-    nn = sqd.argsort(axis=1)[:, 1: N]
+    sqd = np.maximum(sqd, 0)
+    if not neighbors:
+        neighbors = N - 1
+    nn = sqd.argsort(axis=1)[:, 1: (neighbors + 1)]
     D2 = np.take_along_axis(sqd, nn, axis=1)
 
     return D2, nn, sqd
 
 
-def ea(X, K):
+def ea(X, K, neighbors=None):
     """Gaussian entropic affinities.
 
     This computes Gaussian entropic affinities (EAs)
@@ -32,10 +37,12 @@ def ea(X, K):
     :param X: sample-coordinates matrix
     :type X: numpy.ndarray
     :param K: perplexity.
+    :param neighbors: the number of nearest neighbors
+    :type neighbors: int
     :returns: Gaussian entropic affinities as attractive weights
      and Euclidean distances as repulsive weights.
     """
-    D2, nn, sqd = nnsqdist(X)
+    D2, nn, sqd = nnsqdist(X, neighbors)
     N, k = D2.shape
     b = np.zeros(N, dtype=np.float32)
     Wp = np.zeros((N, k), dtype=np.float32)
@@ -181,7 +188,7 @@ def _eabeta(d2, b0, logK, B):
     return b, W
 
 
-def x2p(X, perplexity=20.0):
+def x2p(X, perplexity=30.0):
     """Gaussian affinities.
 
     :param X: sample-coordinates matrix

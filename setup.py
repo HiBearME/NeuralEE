@@ -35,8 +35,9 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
-    description="Scalable Visualization of Massive Single-Cell Data"
-                "Using Neural Networks",
+    description="NeuralEE: a GPU-accelerated elastic embedding"
+                " dimensionality reduction method for visualization"
+                " of large-scale scRNA-seq data",
     install_requires=requirements,
     license="MIT license",
     long_description=readme,
@@ -48,6 +49,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/HibearME/NeuralEE',
-    version='0.1.4',
+    version='0.1.5',
     zip_safe=False,
 )

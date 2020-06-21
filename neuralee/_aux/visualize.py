@@ -1,10 +1,6 @@
-import matplotlib
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import numpy as np
-
-# for compatibility of PyCharm on MacOS
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
@@ -59,7 +55,7 @@ def scatter(X, labels=None, cell_types=None, title=None, s=1, fg_kwargs=dict(),
         else:
             plt.scatter(XX[:, 0], XX[:, 1], s=s, color=scalarMap.to_rgba(il),
                         label=str(ll))
-    if len(label_unique) != 1:
+    if len(label_unique) != 1 and lg_kwargs is not None:
         plt.legend(**lg_kwargs)
     plt.axis('off')
     if title is not None:
