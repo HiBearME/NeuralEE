@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'NeuralEE'
-copyright = '2019, Jiankang Xiong'
+copyright = '2020, Jiankang Xiong'
 author = 'Jiankang Xiong'
 
 # The short X.Y version

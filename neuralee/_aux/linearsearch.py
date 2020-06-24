@@ -1,6 +1,8 @@
 from .error import error_ee
+import torch
 
 
+@torch.no_grad()
 def ls_ee(X, Wp, Wn, lam, P, ff, G, alpha0=1, rho=0.8, c=1e-1):
     """Backtracking line search for EE.
 

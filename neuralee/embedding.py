@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
-from ._aux import error_ee, error_ee_cpu, error_ee_cuda, ls_ee, eloss
+from ._aux import error_ee, error_ee_split, ls_ee, eloss
 from torch.utils.data import DataLoader, TensorDataset
 
 
@@ -56,7 +56,7 @@ class NeuralEE(object):
     :type d: int
     :param lam: trade-off factor of elastic embedding function.
     :param device: device chosen to operate.
-                   If None, set as torch.device('cpu').
+     If None, set as torch.device('cpu').
     :type device: torch.device
     """
     def __init__(self, dataset, d=2, lam=1, device=None):
@@ -94,6 +94,7 @@ class NeuralEE(object):
         return self.dataset.labels.squeeze()
 
     @staticmethod
+    @torch.no_grad()
     def _loss(Y, Wp, Wn, lam, net, device, calculate_error):
         """
 
@@ -111,18 +112,17 @@ class NeuralEE(object):
         :return: elastic embedding loss.
         """
         results = dict()
-        with torch.no_grad():
-            net.eval()
-            net.to(device)
-            X = net(Y.to(device))
+        net.eval()
+        net.to(device)
+        X = net(Y.to(device))
         results['X'] = X.cpu()
         if calculate_error is not None:
             assert calculate_error in ['cpu', 'cuda']
             if calculate_error == 'cpu':
-                e = error_ee_cpu(X.cpu().numpy(), Wp, Wn, lam)
+                e = error_ee_split(X, Wp, Wn, lam, memory=4, device=torch.device('cpu'))
                 results['e'] = e
             else:
-                e = error_ee_cuda(X, Wp, Wn, lam)
+                e = error_ee_split(X, Wp, Wn, lam)
                 results['e'] = e.item()
 
         return results
@@ -138,6 +138,7 @@ class NeuralEE(object):
             self.Y, self.Wp, self.Wn, self.lam, self.net, self.device,
             calculate_error=calculate_error)
 
+    @torch.no_grad()
     def EE(self, size=1., maxit=200, tol=1e-5, frequence=None, aff='ea',
            perplexity=30.0):
         """Free Elastic embedding (no mapping).
@@ -273,7 +274,8 @@ class NeuralEE(object):
         :type verbose: bool
         :param maxit: max number of iterations for NeuralEE.
         :type maxit: int
-        :param calculate_error: how to calculate error.
+        :param calculate_error: how to calculate error,
+         if the number of samples is large, set None to avoid out of memory on 'cuda' or 'cpu'.
         :type calculate_error: {None, 'cpu', 'cuda'}
         :param pin_memory: whether to pin data on GPU memory
          to save time of transfer, which depends on your GPU memory.
@@ -317,7 +319,7 @@ class NeuralEE(object):
             Wns = Wn.unsqueeze(0).to(self.device)
         else:
             assert calculate_error is None or self.Wp is not None, \
-                'affinity on entire dataset is needed.'
+                'affinity on entire dataset is needed to calculate error, or let calculate_error set as None.'
             assert self.Lps is not None, \
                 'affinity is needed.'
             Lps = self.Lps.to(self.device) if pin_memory else self.Lps
@@ -401,10 +403,11 @@ class NeuralEE(object):
         else:
             print('Neural Elastic Embedding, lambda={}, completed in {:.2f}s.'
                   .format(self.lam, time.time() - since))
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
         return results
 
-    def map(self, samples=dict(), calculate_error='cuda'):
+    @torch.no_grad()
+    def map(self, samples=dict(), calculate_error=None):
         """Directly mapping via the learned nn.
 
         :param samples: 'Y': samples to be mapped
@@ -416,7 +419,8 @@ class NeuralEE(object):
          None is acceptable if error need not be calculated.
          if empty dict, mapping on training data.
         :type samples: dict
-        :param calculate_error: how to calculate error.
+        :param calculate_error: how to calculate error,
+         if the number of samples is large, set None to avoid out of memory on 'cuda' or 'cpu'.
         :type calculate_error: {None, 'cpu', 'cuda'}
         :return: embedding results.
                  'X': embedding coordinates;

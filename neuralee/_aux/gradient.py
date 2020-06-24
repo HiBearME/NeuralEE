@@ -1,6 +1,8 @@
 from .error import sqdist
+import torch
 
 
+@torch.no_grad()
 def gradient_ee(X, Lp, Wn, lam):
     """gradient of elastic embedding function w.r.t X.
 
@@ -10,7 +12,5 @@ def gradient_ee(X, Lp, Wn, lam):
     :param lam: trade-off factor of elastic embedding function.
     :return: gradient of elastic embedding function w.r.t X.
     """
-    ker = (-sqdist(X)).exp()
-    WWn = lam * Wn * ker
-    DDn = WWn.sum(dim=1).diagflat()
-    return (4 * (Lp + WWn - DDn)) @ X
+    WWn = lam * Wn * (-sqdist(X)).exp()
+    return (4 * (Lp + WWn - WWn.sum(dim=1).diagflat())) @ X

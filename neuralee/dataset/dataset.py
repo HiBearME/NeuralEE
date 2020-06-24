@@ -81,7 +81,7 @@ class GeneExpressionDataset(object):
 
         Preparation for NeuralEE with mini-batch trick.
 
-        :param N_samll: size of each batch.
+        :param N_small: size of each batch.
         :type N_small: int or percentage
         :param aff: affinity used to calculate attractive weights.
         :type aff: {'ea', 'x2p'}
@@ -96,7 +96,7 @@ class GeneExpressionDataset(object):
             N_small = N_small if isinstance(N_small, int) else int(N_small * N)
         print('Compute affinity, perplexity={}, N_small={}, on each batch'.
               format(perplexity, N_small))
-        if N_small is None or N_small == N:
+        if (N_small is None or N_small == N) and hasattr(self, "Y_splits"):
             return
         split = int(np.floor(N / N_small))
         indexes = np.random.permutation(N)[: split * N_small]

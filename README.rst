@@ -11,7 +11,7 @@ NeuralEE
 * Free software: MIT license
 * Documentation: https://neuralee.readthedocs.io.
 
-.. image:: https://raw.githubusercontent.com/HiBearME/NeuralEE/master/img/FlowChart.jpg
+.. image:: https://raw.githubusercontent.com/HiBearME/NeuralEE/master/img/FlowChart.png
     :alt: Flowchart of NeuralEE
 
 This is an applicable version for NeuralEE.
@@ -80,7 +80,7 @@ For other generic datasets, it's also convenient to use ``GeneExpressionDataset`
 
 2. Embedding
 
-There are a number of parameters that can be set for the UMAP class; the major ones are as follows:
+There are a number of parameters that can be set for the NeuralEE class; the major ones are as follows:
 
  -  ``d``: This determines the dimension of embedding space, with 2 being default.
 
@@ -130,7 +130,7 @@ b). Initialize NeuralEE class.
 
     import torch
     # detect whether to use GPU.
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     NEE = NeuralEE(dataset, d=2, lam=1, device=device)
 
 c). Embedding.
@@ -150,6 +150,18 @@ If NueralEE will be used, it could be calculated as:
 For reproduction of original paper's results, check at
 `Jupyter notebooks <https://github.com/HiBearME/NeuralEE/tree/master/tests/notebooks>`_
 files.
+
+-------------------------
+Computer memory consuming
+-------------------------
+
+Computer memory is mainly allocated for saving attractive and repulsive matrices,
+which is approximately calculated as follows:
+
+.. image:: https://raw.githubusercontent.com/HiBearME/NeuralEE/master/img/Equation_Memory.png
+    :alt: Equation of Basic Memory
+
+Hyper-parameters selection of NeuralEE on large-scale data is limited on computers with limited memory.
 
 --------
 Examples
@@ -184,8 +196,8 @@ To reproduce this, check at `Jupyter notebook for RETINA dataset <https://github
 ``BRAIN-LARGE`` Dataset consists of 1.3 million mouse brain cells, and it's clustered by ``Louvain`` algorithm.
 
 This dataset is quite large, so it's very difficult to apply EE.
-Instead, we apply NeuralEE  with (``lam`` =10, ``perplexity`` =30, ``N_small`` =0.5, ``maxit`` =50, ``pin_memory`` = ``False``) on a normal GPU, equipped with 11G memory
-(when set ``pin_memory`` as ``False``, It also works on a GPU of limimted memory and only uses less than 1G memory).
+Instead, we apply NeuralEE  with (``lam`` =1, ``perplexity`` =30, ``N_small`` =5000, ``maxit`` =50, ``pin_memory`` = ``False``) on a normal GPU, equipped with 11G memory
+(when set ``pin_memory`` as ``False``, It also works on a GPU of limited memory and only uses less than 1G memory).
 It needs at least 64G computer memory to save data, and it could finish less than half hour.
 
 .. image:: https://raw.githubusercontent.com/HiBearME/NeuralEE/master/img/BRAIN-LARGE.png

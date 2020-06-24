@@ -1,8 +1,8 @@
 import torch
-import numpy as np
 import math
 
 
+@torch.no_grad()
 def error_ee(X, Wp, Wn, lam):
     """Elastic embedding loss function.
 
@@ -25,6 +25,7 @@ def error_ee(X, Wp, Wn, lam):
     return error, ker
 
 
+@torch.no_grad()
 def sqdist(X):
     """Euclidean distance of coordinates.
 
@@ -42,43 +43,8 @@ def sqdist(X):
     return sqd
 
 
-def error_ee_cpu(X, Wp, Wn, lam):
-    """Elastic embedding loss function deployed on CPU.
-
-    It splits X, Wp, Wn into pieces and summarizes respective loss values
-    to release computation stress.
-
-    :param X: sample-coordinates matrix
-    :type X: numpy.ndarray
-    :param Wp: attractive weights.
-    :type Wp: numpy.ndarray
-    :param Wn: repulsive weights.
-    :type Wn: numpy.ndarray
-    :param lam: trade-off factor of elastic embedding function.
-    :returns: elastic embedding loss value.
-    """
-    mem = 4
-    N = X.shape[0]
-    # This will fit in mem GB RAM
-    B = math.floor((mem * 1024 ** 3) / (2 * N * 8))
-    error = 0
-    i1 = 0
-    i2 = min(N, B)
-    X2 = X ** 2
-    x2 = X2.sum(axis=1, keepdims=True)
-
-    while i1 < N:
-        sqd = X2[i1: i2, :].sum(axis=1, keepdims=True) - \
-            2 * X[i1: i2, :] @ X.T + x2.T
-        ker = np.exp(-sqd)
-        error += Wp[i1: i2, :].reshape(-1).dot(sqd.reshape(-1)) + \
-            lam * Wn[i1: i2, :].reshape(-1).dot(ker.reshape(-1))
-        i1 = i1 + B
-        i2 = min(N, i1 + B)
-    return error
-
-
-def error_ee_cuda(X, Wp, Wn, lam):
+@torch.no_grad()
+def error_ee_split(X, Wp, Wn, lam, memory=2, device=None):
     """Elastic embedding loss function deployed on GPU.
 
     It splits X, Wp, Wn into pieces and summarizes respective loss values
@@ -91,13 +57,17 @@ def error_ee_cuda(X, Wp, Wn, lam):
     :param Wn: repulsive weights.
     :type Wn: torch.FloatTensor
     :param lam: trade-off factor of elastic embedding function.
+    :param memory: memory(GB) allocated to computer error.
+    :type device: torch.device
+    :param device: device chosen to operate.
+     If None, set as torch.device('cpu').
+    :type device: torch.device
     :returns: elastic embedding loss value.
     """
-    device = X.device
-    mem = 2
+    device = X.device if device is None else device
+    X = X.to(device)
     N = X.shape[0]
-    # This will fit in mem GB RAM
-    B = math.floor((mem * 1024 ** 3) / (2 * N * 8))
+    B = math.floor((memory * 1024 ** 3) / (2 * N * 8))
     error = 0
     i1 = 0
     i2 = min(N, B)
