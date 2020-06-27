@@ -119,7 +119,8 @@ class NeuralEE(object):
         if calculate_error is not None:
             assert calculate_error in ['cpu', 'cuda']
             if calculate_error == 'cpu':
-                e = error_ee_split(X, Wp, Wn, lam, memory=4, device=torch.device('cpu'))
+                e = error_ee_split(
+                    X, Wp, Wn, lam, memory=4, device=torch.device('cpu'))
                 results['e'] = e
             else:
                 e = error_ee_split(X, Wp, Wn, lam)
@@ -275,7 +276,8 @@ class NeuralEE(object):
         :param maxit: max number of iterations for NeuralEE.
         :type maxit: int
         :param calculate_error: how to calculate error,
-         if the number of samples is large, set None to avoid out of memory on 'cuda' or 'cpu'.
+         if the number of samples is large,
+         set None to avoid out of memory on 'cuda' or 'cpu'.
         :type calculate_error: {None, 'cpu', 'cuda'}
         :param pin_memory: whether to pin data on GPU memory
          to save time of transfer, which depends on your GPU memory.
@@ -319,7 +321,8 @@ class NeuralEE(object):
             Wns = Wn.unsqueeze(0).to(self.device)
         else:
             assert calculate_error is None or self.Wp is not None, \
-                'affinity on entire dataset is needed to calculate error, or let calculate_error set as None.'
+                'affinity on entire dataset is needed to calculate error, ' \
+                'or let calculate_error set as None.'
             assert self.Lps is not None, \
                 'affinity is needed.'
             Lps = self.Lps.to(self.device) if pin_memory else self.Lps
@@ -420,7 +423,8 @@ class NeuralEE(object):
          if empty dict, mapping on training data.
         :type samples: dict
         :param calculate_error: how to calculate error,
-         if the number of samples is large, set None to avoid out of memory on 'cuda' or 'cpu'.
+         if the number of samples is large,
+         set None to avoid out of memory on 'cuda' or 'cpu'.
         :type calculate_error: {None, 'cpu', 'cuda'}
         :return: embedding results.
                  'X': embedding coordinates;

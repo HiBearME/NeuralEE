@@ -158,8 +158,7 @@ Computer memory consuming
 Computer memory is mainly allocated for saving attractive and repulsive matrices,
 which is approximately calculated as follows:
 
-.. image:: https://raw.githubusercontent.com/HiBearME/NeuralEE/master/img/Equation_Memory.png
-    :alt: Equation of Basic Memory
+.. math:: \frac{DataSize \times BatchSize \times 4 \times 2}{1024^3}(GBytes)
 
 Hyper-parameters selection of NeuralEE on large-scale data is limited on computers with limited memory.
 
