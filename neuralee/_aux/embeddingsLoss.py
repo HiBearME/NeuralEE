@@ -6,7 +6,7 @@ class ELoss(torch.autograd.Function):
     @staticmethod
     def forward(ctx, X, Lp, Wn, lam):
         ctx.X, ctx.Lp, ctx.Wn, ctx.lam = X, Lp, Wn, lam
-        return torch.tensor(0)
+        return torch.tensor(0.0, requires_grad=True).to(X.device)
 
     def backward(ctx, grad_output):
         X, Lp, Wn, lam = ctx.X, ctx.Lp, ctx.Wn, ctx.lam
